@@ -1,0 +1,379 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickKart | Groceries in Minutes</title>
+<style>
+:root {
+  --green: #0c831f;
+  --dark: #173b25;
+  --yellow: #f8d94e;
+  --bg: #f7f8f5;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: #222;
+}
+header {
+  background: white;
+  padding: 16px 6%;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.logo { font-size: 25px; font-weight: 900; color: var(--green); }
+.logo span { color: #e4a900; }
+.location { font-size: 12px; color: #666; line-height: 1.6; }
+.location strong { display: block; color: #222; font-size: 14px; }
+.search {
+  flex: 1;
+  max-width: 500px;
+  display: flex;
+  background: #f4f5f2;
+  border: 1px solid #e5e5e5;
+  padding: 12px 15px;
+  border-radius: 12px;
+  gap: 10px;
+}
+.search input {
+  border: none; outline: none; background: transparent;
+  width: 100%; font-size: 14px;
+}
+.cart-button, .primary {
+  border: none; border-radius: 10px; padding: 12px 17px;
+  background: var(--green); color: white; font-weight: bold;
+  cursor: pointer;
+}
+.hero {
+  margin: 25px auto; width: 90%; max-width: 1200px;
+  background: var(--yellow); border-radius: 22px;
+  min-height: 230px; padding: 35px;
+  display: flex; align-items: center; justify-content: space-between;
+  overflow: hidden;
+}
+.hero h1 { font-size: clamp(28px, 4vw, 46px); color: var(--dark); }
+.hero p { margin: 13px 0 20px; color: #40503d; }
+.hero-art { font-size: clamp(65px, 12vw, 125px); }
+.pill {
+  display: inline-block; background: var(--green); color: white;
+  padding: 8px 12px; border-radius: 20px; font-size: 12px;
+}
+main { width: 90%; max-width: 1200px; margin: auto; }
+.section-head {
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 12px; margin: 28px 0 18px;
+}
+.section-head h2 { font-size: 23px; }
+.categories {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px;
+}
+.category {
+  background: white; padding: 18px 8px; border-radius: 14px;
+  text-align: center; cursor: pointer; border: 2px solid transparent;
+}
+.category.active, .category:hover { border-color: var(--green); }
+.category div { font-size: 34px; margin-bottom: 9px; }
+.category span { font-size: 13px; font-weight: bold; }
+.products {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px;
+  margin-bottom: 50px;
+}
+.product {
+  background: white; padding: 14px; border: 1px solid #eee;
+  border-radius: 14px; transition: .2s;
+}
+.product:hover { transform: translateY(-3px); box-shadow: 0 8px 22px #0000000d; }
+.product-art {
+  background: #f8f8f3; height: 130px; border-radius: 10px;
+  display: grid; place-items: center; font-size: 65px;
+  position: relative; margin-bottom: 12px;
+}
+.time {
+  position: absolute; top: 7px; left: 7px;
+  font-size: 9px; background: white; padding: 5px;
+  border-radius: 5px; font-weight: bold;
+}
+.product h3 { font-size: 14px; margin-bottom: 8px; line-height: 1.4; }
+.weight { font-size: 12px; color: #777; margin-bottom: 14px; }
+.product-bottom { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+.price { font-weight: bold; font-size: 14px; }
+.add {
+  border: 1px solid var(--green); color: var(--green);
+  background: #f0fff1; padding: 7px 12px; border-radius: 8px;
+  font-weight: bold; cursor: pointer;
+}
+.add:hover { background: var(--green); color: white; }
+.empty { padding: 30px; text-align: center; grid-column: 1/-1; color: #777; }
+footer {
+  background: #153c25; color: white; padding: 30px 6%;
+  text-align: center; line-height: 2;
+}
+footer p { color: #cbd8ce; font-size: 13px; }
+.cart-overlay {
+  position: fixed; inset: 0; background: #0007;
+  z-index: 20; display: none;
+}
+.cart-overlay.open { display: block; }
+.cart-panel {
+  position: absolute; right: 0; top: 0; height: 100%;
+  width: min(420px, 100%); background: white; padding: 23px;
+  display: flex; flex-direction: column;
+}
+.cart-head { display: flex; justify-content: space-between; margin-bottom: 20px; }
+.close { background: none; border: none; font-size: 25px; cursor: pointer; }
+.cart-items { overflow: auto; flex: 1; }
+.cart-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 0; border-bottom: 1px solid #eee;
+}
+.cart-emoji { font-size: 30px; }
+.cart-info { flex: 1; }
+.cart-info strong { font-size: 14px; }
+.cart-info p { margin-top: 5px; font-size: 13px; }
+.qty { display: flex; align-items: center; gap: 9px; }
+.qty button {
+  border: 1px solid var(--green); background: white; color: var(--green);
+  border-radius: 5px; width: 25px; height: 25px; cursor: pointer;
+}
+.bill { border-top: 1px solid #ddd; padding-top: 17px; }
+.bill-row { display: flex; justify-content: space-between; margin: 10px 0; }
+.bill .total { font-size: 19px; font-weight: bold; }
+.checkout { width: 100%; margin-top: 12px; padding: 15px; }
+@media(max-width:900px) {
+  .products { grid-template-columns: repeat(3, 1fr); }
+  .categories { grid-template-columns: repeat(3, 1fr); }
+  header { flex-wrap: wrap; gap: 12px; }
+  .search { order: 3; max-width: none; flex-basis: 100%; }
+}
+@media(max-width:500px) {
+  header { padding: 13px 5%; }
+  .logo { font-size: 21px; }
+  .location { display: none; }
+  .hero { padding: 24px 18px; min-height: 180px; }
+  .hero-art { font-size: 65px; }
+  .hero p { font-size: 13px; }
+  main { width: 92%; }
+  .products { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .product { padding: 9px; }
+  .product-art { height: 105px; font-size: 52px; }
+  .category { padding: 13px 4px; }
+  .section-head h2 { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Quick<span>Kart</span></div>
+  <div class="location">Delivering to <strong>📍 Your Location</strong></div>
+  <label class="search">
+    🔍 <input id="search" type="search"
+    placeholder="Search milk, fruits, snacks..." aria-label="Search products">
+  </label>
+  <button class="cart-button" onclick="openCart()">
+    🛒 Cart (<span id="cart-count">0</span>)
+  </button>
+</header>
+
+<section class="hero">
+  <div>
+    <span class="pill">FRESH • FAST • EASY</span>
+    <h1>Daily needs,<br>delivered with love.</h1>
+    <p>Your everyday essentials in just a few clicks.</p>
+    <button class="primary" onclick="document.getElementById('shop').scrollIntoView({behavior:'smooth'})">
+      Shop Now →
+    </button>
+  </div>
+  <div class="hero-art">🛒🥑</div>
+</section>
+
+<main id="shop">
+  <div class="section-head"><h2>Shop by Category</h2></div>
+  <div class="categories" id="categories"></div>
+
+  <div class="section-head">
+    <h2 id="product-heading">Popular Products</h2>
+    <span id="result-count"></span>
+  </div>
+  <div class="products" id="products"></div>
+</main>
+
+<footer>
+  <h2>QuickKart 🛒</h2>
+  <p>Your neighbourhood grocery shopping demo.</p>
+  <p>Made with HTML, CSS & JavaScript | Student Project</p>
+  <p>© 2026 QuickKart. Demo website.</p>
+</footer>
+
+<div class="cart-overlay" id="overlay" onclick="overlayClick(event)">
+  <aside class="cart-panel">
+    <div class="cart-head">
+      <h2>🛒 Your Cart</h2>
+      <button class="close" onclick="closeCart()" aria-label="Close cart">×</button>
+    </div>
+    <div class="cart-items" id="cart-items"></div>
+    <div class="bill" id="bill"></div>
+  </aside>
+</div>
+
+<script>
+const categories = [
+  {name:"All", emoji:"🛍️"},
+  {name:"Fruits", emoji:"🍎"},
+  {name:"Dairy", emoji:"🥛"},
+  {name:"Snacks", emoji:"🍪"},
+  {name:"Drinks", emoji:"🥤"},
+  {name:"Vegetables", emoji:"🥦"}
+];
+
+const products = [
+  {id:1, name:"Fresh Red Apples", category:"Fruits", emoji:"🍎", weight:"4 pieces", price:99},
+  {id:2, name:"Fresh Bananas", category:"Fruits", emoji:"🍌", weight:"6 pieces", price:40},
+  {id:3, name:"Sweet Oranges", category:"Fruits", emoji:"🍊", weight:"500 g", price:60},
+  {id:4, name:"Farm Fresh Milk", category:"Dairy", emoji:"🥛", weight:"500 ml", price:32},
+  {id:5, name:"Creamy Butter", category:"Dairy", emoji:"🧈", weight:"100 g", price:58},
+  {id:6, name:"Cheese Slices", category:"Dairy", emoji:"🧀", weight:"200 g", price:115},
+  {id:7, name:"Potato Chips", category:"Snacks", emoji:"🍟", weight:"1 pack", price:20},
+  {id:8, name:"Chocolate Cookies", category:"Snacks", emoji:"🍪", weight:"150 g", price:45},
+  {id:9, name:"Classic Popcorn", category:"Snacks", emoji:"🍿", weight:"1 pack", price:35},
+  {id:10, name:"Orange Juice", category:"Drinks", emoji:"🧃", weight:"1 pack", price:75},
+  {id:11, name:"Cold Coffee", category:"Drinks", emoji:"🥤", weight:"250 ml", price:55},
+  {id:12, name:"Fresh Broccoli", category:"Vegetables", emoji:"🥦", weight:"250 g", price:40},
+  {id:13, name:"Red Tomatoes", category:"Vegetables", emoji:"🍅", weight:"500 g", price:30},
+  {id:14, name:"Fresh Carrots", category:"Vegetables", emoji:"🥕", weight:"500 g", price:35},
+  {id:15, name:"Green Avocado", category:"Fruits", emoji:"🥑", weight:"1 piece", price:80}
+];
+
+let activeCategory = "All";
+let cart = {};
+
+const money = n => "₹" + n.toFixed(2);
+
+function renderCategories() {
+  document.getElementById("categories").innerHTML = categories.map(c => `
+    <div class="category ${activeCategory === c.name ? "active" : ""}"
+         onclick="selectCategory('${c.name}')">
+      <div>${c.emoji}</div><span>${c.name}</span>
+    </div>
+  `).join("");
+}
+
+function renderProducts() {
+  const term = document.getElementById("search").value.toLowerCase().trim();
+  const filtered = products.filter(p =>
+    (activeCategory === "All" || p.category === activeCategory) &&
+    (p.name.toLowerCase().includes(term) ||
+     p.category.toLowerCase().includes(term))
+  );
+
+  document.getElementById("product-heading").textContent =
+    activeCategory === "All" ? "Popular Products" : activeCategory;
+
+  document.getElementById("result-count").textContent =
+    filtered.length + " products";
+
+  document.getElementById("products").innerHTML = filtered.length
+    ? filtered.map(p => `
+      <article class="product">
+        <div class="product-art">
+          <span class="time">⚡ QUICKKART</span>${p.emoji}
+        </div>
+        <h3>${p.name}</h3>
+        <p class="weight">${p.weight}</p>
+        <div class="product-bottom">
+          <span class="price">${money(p.price)}</span>
+          <button class="add" onclick="addToCart(${p.id})">
+            ${cart[p.id] ? "+" + cart[p.id] + " · Add" : "ADD +"}
+          </button>
+        </div>
+      </article>
+    `).join("")
+    : '<div class="empty">No products found. Try another search.</div>';
+}
+
+function selectCategory(name) {
+  activeCategory = name;
+  renderCategories();
+  renderProducts();
+}
+
+function addToCart(id) {
+  cart[id] = (cart[id] || 0) + 1;
+  updateCart();
+}
+
+function changeQty(id, amount) {
+  cart[id] = (cart[id] || 0) + amount;
+  if (cart[id] <= 0) delete cart[id];
+  updateCart();
+}
+
+function updateCart() {
+  const count = Object.values(cart).reduce((a,b) => a+b, 0);
+  document.getElementById("cart-count").textContent = count;
+
+  const entries = products.filter(p => cart[p.id]);
+  document.getElementById("cart-items").innerHTML = entries.length
+    ? entries.map(p => `
+      <div class="cart-item">
+        <span class="cart-emoji">${p.emoji}</span>
+        <div class="cart-info">
+          <strong>${p.name}</strong>
+          <p>${money(p.price)} × ${cart[p.id]}</p>
+        </div>
+        <div class="qty">
+          <button onclick="changeQty(${p.id},-1)">−</button>
+          <span>${cart[p.id]}</span>
+          <button onclick="changeQty(${p.id},1)">+</button>
+        </div>
+      </div>
+    `).join("")
+    : '<div class="empty">Your cart is empty 🛒<br>Add some fresh products!</div>';
+
+  const subtotal = entries.reduce((sum,p) => sum + p.price*cart[p.id], 0);
+  const delivery = subtotal === 0 || subtotal >= 299 ? 0 : 25;
+  const total = subtotal + delivery;
+
+  document.getElementById("bill").innerHTML = `
+    <div class="bill-row"><span>Subtotal</span><strong>${money(subtotal)}</strong></div>
+    <div class="bill-row"><span>Delivery fee</span><strong>${delivery === 0 && subtotal > 0 ? "FREE" : money(delivery)}</strong></div>
+    <div class="bill-row total"><span>Total</span><span>${money(total)}</span></div>
+    <button class="primary checkout" onclick="checkout()"
+      ${count === 0 ? "disabled" : ""}>Proceed to Checkout →</button>
+    <p style="font-size:11px;color:#777;margin-top:10px">
+      Demo only. No real payment or order is processed.
+    </p>
+  `;
+
+  renderProducts();
+}
+
+function openCart() {
+  document.getElementById("overlay").classList.add("open");
+}
+function closeCart() {
+  document.getElementById("overlay").classList.remove("open");
+}
+function overlayClick(event) {
+  if (event.target.id === "overlay") closeCart();
+}
+function checkout() {
+  if (Object.keys(cart).length === 0) return;
+  alert("Thank you for trying QuickKart! This is a demo checkout. No order was placed.");
+}
+
+document.getElementById("search").addEventListener("input", renderProducts);
+renderCategories();
+updateCart();
+</script>
+</body>
+</html>
